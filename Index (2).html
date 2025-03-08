@@ -1,0 +1,79 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<h2 style="text-align:center; font-size: 28px;">Simple ChessBot v.1.0</h2>
+<button id="flipchessboard" style="margin:auto; display:block; font-size: 20px; position: relative;">Flip Board</button>
+	<div id="myBoard" class="chessboardlayout" style="width: 35%; margin: auto; margin-top: 10px;"></div><br />
+
+<style>
+.chessboardlayout{
+    display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+
+</style>
+
+<link rel="stylesheet" href="../Chess/css/chessboard-1.0.0.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="../Chess/js/chessboard-1.0.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+
+
+<script>
+var board = null
+var game = new Chess()
+
+function onDragStart (source, piece, position, orientation) {
+  // do not pick up pieces if the game is over
+  if (game.game_over()) return false
+
+  // only pick up pieces for White
+  if (piece.search(/^b/) !== -1) return false
+}
+
+function makeRandomMove () {
+  var possibleMoves = game.moves()
+
+  // game over
+  if (possibleMoves.length === 0) return
+
+  var randomIdx = Math.floor(Math.random() * possibleMoves.length)
+  game.move(possibleMoves[randomIdx])
+  board.position(game.fen())
+}
+
+function onDrop (source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+  })
+
+  // illegal move
+  if (move === null) return 'snapback'
+
+  // make random legal move for black
+  window.setTimeout(makeRandomMove, 250)
+}
+
+// update the board position after the piece snap
+// for castling, en passant, pawn promotion
+function onSnapEnd () {
+  board.position(game.fen())
+}
+
+var config = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+}
+board = Chessboard('myBoard', config)
+
+</script>
+
+</html>
